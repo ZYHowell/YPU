@@ -10,11 +10,11 @@ Our YPU has 3 inputs and 2 outputs:
 
 ```verilog
 module cpu(
-	input  wire                 clk_in,				// system clock signal
-	input  wire                 rst_in,				// reset signal
+    input  wire                 clk_in,			// system clock signal
+    input  wire                 rst_in,			// reset signal
     input  wire [`RegLen - 1 : 0] rom_data_i,		// received data 
     output wire [`InstLen - 1 : 0] rom_addr_o,		// data address
-    output wire rom_ce_o							// enable signal for rom
+    output wire rom_ce_o				// enable signal for rom
 );
     ...
 endmodule
