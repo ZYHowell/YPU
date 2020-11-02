@@ -70,7 +70,7 @@ Where `jumpEnable` and `jumpAddress` are two new input. Where do the two signals
 
 ##### if_id
 
-The goal of the module is to keep the value from `if` module and sends it to `id` module at the beginning of the next cycle. So it uses sequential circuit to send to ID: 
+The goal of the module is to keep the value from `if` module and sends it to `id` module at the beginning of the next cycle. So it uses sequential circuit to send to `id`: 
 
 ```verilog
 module if_id(
@@ -96,11 +96,11 @@ endmodule
 
 Where does the two input come from? ```if_pc``` is from the IF module, while ```if_inst``` is input from rom, so it is the ```rom_data_i``` in the CPU's input. 
 
-The ```if_id``` is very close to ```id_ex```, ```ex_mem``` and ```mem_wb```, so we ignore it. 
+The ```if_id``` is very close to ```id_ex```, ```ex_mem``` and ```mem_wb```, so we ignore them. 
 
 ##### ID
 
-This module parses the instruction and sends requests to register file to read and write data. We divide the two function in two parts: 
+This module parses the instruction and sends requests to register file to read data. We divide the two functions in two parts: 
 
 ```verilog
 //part 1:parse process
@@ -143,7 +143,7 @@ Notice that, in the cycle, at the beginning(that is, the `posedge clk` signal) d
 
 Also notice that, to avoid latch, we set all value be disable/zero at the beginning. So each value is set at all paths. 
 
-The second part is to receive the parsed result from register file: 
+The second part is to receive the result from register file: 
 
 ```verilog
 //Get rs1
@@ -166,7 +166,7 @@ always @ (*) begin
 end
 ```
 
-Notice that, the execution path in the cycle is: `if_id` sends at the rising time(`posedge`), then `id` notices it(`always @(*)`) and start executing the first part(parse the input instruction), then it sends `reg1_read_enable,reg1_addr_o`(and likewise those of `reg2`) to `register file`. The `register file` then outputs the result to `id` module and `id` executes the second part. Then all data to `id_ex` are ready. 
+Notice that, the execution path in the cycle is: `if_id` sends at the rising time(`always @(posedge clk)`), then `id` notices it(`always @(*)`) and start executing the first part(parse the instruction from `if_id`), then it sends `reg1_read_enable,reg1_addr_o`(and likewise those of `reg2`) to `register file`. The `register file` then outputs the result to `id` module and `id` executes the second part. After that, all data to `id_ex` is ready. 
 
 ##### register file(part 1)
 
@@ -191,19 +191,19 @@ always @ (*) begin
 end
 ```
 
-Reading the second register is almost the same, you only need to turn every 1 to 2. 
+Reading the second register address is almost the same, you only need to turn every 1 to 2. 
 
 Notice that, in this version we do not consider the data dependency. 
 
-How to handle it? You can maintain a mark of every register in the `register file`, and when reading the register, check if the mark is true. If so, there is an executing instruction which will write to the register. So you send back a signal to `id` module and it should try to handle it. (For example, halt part of the pipeline until the data is read successfully). 
+How to handle it? You can maintain a mark of every register in the `register file`, and when reading the register, check if the mark is true. If so, there is an executing instruction which will write to the register. So you send back a signal to `id` module and it should try to handle the signal. (For example, halt part of the pipeline until the data is read successfully). 
 
 You can also try to support data forward to alleviate the problem. Remember that you can have you own design. 
 
-Part 2 of register file is in 'write back'
+Part 2 of register file is in 'write back'. 
 
 ##### EX
 
-Ex is a big `case`. However, since we handle `ori` instruction, it only has one branch. 
+Ex is a big `case`. However, since we only handle `ori` instruction in YPU, it only has one branch. 
 
 ```verilog
 module ex(
@@ -282,10 +282,10 @@ Now connect them together in `cpu.v` and your YPU is done.
 1. As mentioned in register file(part 1), the data dependency is not handled. 
 2. You can make your YPU support all arithmetic instructions just like `ori`, but when you are working on the jump instruction, you should consider: 
    1. signal to `pc_reg`;
-   2. clean what you've just read - they are not actually needed to be executed; 
-3. When you are working on `l-type` instruction, what happens when both `mem` and `if` send requirement to the `rom`? You should implement a `mem_ctrl` module, which sends only one request to `rom` in a cycle and record the other one, handle it later. Also, `mem` and `if` should be able to handle the situation above: it should know the situation(the reading request is pending) and halt itself at the time. 
+   2. clean what you've just read - should not execute them; 
+3. When you are working on `l-type` instruction, what happens when both `mem` and `if` send requirement to the `rom`? You should implement a `mem_ctrl` module, which sends only one request to `rom` in a cycle and records the other one, handles it later. Also, `mem` and `if` should be able to handle the situation above: it should know the situation(the reading request is pending) and halt itself at the time. 
 4. How to read a word when you can only read a byte in a cycle? Try finite state machine. 
 
 ##### I wanna try Tomasulo
 
-Actually, the tutorial is also helpful for Tomasulo, since you also need `id`, `ex`, `register file`, `mem`. Tomasulo is just to add more judgement, to consider more. 
+Actually, the tutorial is also helpful for Tomasulo, since it also need `id`, `ex`, `register file`, `mem`. Tomasulo is just to add more judgement, to consider more. 
