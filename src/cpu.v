@@ -21,9 +21,9 @@ wire [`RegLen - 1 : 0] reg2_data;
 
 //ID -> Register
 wire [`RegAddrLen - 1 : 0] reg1_addr;
-wire [`RegLen - 1 : 0] reg1_read_enable;
+wire reg1_read_enable;
 wire [`RegAddrLen - 1 : 0] reg2_addr;
-wire [`RegLen - 1 : 0] reg2_read_enable;
+wire reg2_read_enable;
 
 //ID -> ID/EX
 wire [`OpCodeLen - 1 : 0] id_aluop;

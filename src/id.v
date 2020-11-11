@@ -29,9 +29,9 @@ module id(
 
     //To Register
     output reg [`RegAddrLen - 1 : 0] reg1_addr_o,
-    output reg [`RegLen - 1 : 0] reg1_read_enable,
+    output reg reg1_read_enable,
     output reg [`RegAddrLen - 1 : 0] reg2_addr_o,
-    output reg [`RegLen - 1 : 0] reg2_read_enable,
+    output reg reg2_read_enable,
 
     //To next stage
     output reg [`RegLen - 1 : 0] reg1,
